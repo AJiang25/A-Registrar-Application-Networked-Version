@@ -48,6 +48,14 @@ def main():
         while True:
             try:
                 sock, client_addr = server_sock.accept()
+                #with sock change to threading lecture (handle client in threading class),
+                #  handleclient function is pretty intensive and long, no sqlite connection, handle JSON documents
+                # JSON functions, interact with database part is kept from the sql database,
+
+                # with sqlite should be in handle_client. overarching sqlite kept from 
+                # last assignment and put in getoverviews function. handle threading in the main function. Call 
+                # something that handles threading. In a client_handler_thread, you will call 
+                # handle_client which is a function that will process JSON documents and getoverviews function. 
                 with sock:
                     print('Accepted connection')
                     print('Opened socket')
