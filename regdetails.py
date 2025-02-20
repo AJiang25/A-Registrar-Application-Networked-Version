@@ -9,6 +9,11 @@ import sys
 import argparse
 import socket
 import json
+import textwrap
+#-----------------------------------------------------------------------
+def print_wrapped(text):
+    print(textwrap.fill(text, width = 72, break_long_words=False,
+                        replace_whitespace=False, subsequent_indent=" "*3))
 #-----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description =

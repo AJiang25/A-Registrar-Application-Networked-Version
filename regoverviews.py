@@ -9,6 +9,11 @@ import sys
 import argparse
 import socket
 import json
+import textwrap
+#-----------------------------------------------------------------------
+def print_wrapped(text):
+    print(textwrap.fill(text, width = 72, break_long_words=False,
+                        replace_whitespace=False, subsequent_indent=" "*3))
 #-----------------------------------------------------------------------
 
 def main():
@@ -59,7 +64,7 @@ def main():
             if response:
                 response_data = json.loads(response)
                 for line in response_data:
-                    print(line, end='')
+                    print_wrapped(line, end='')
             
             
         #     # Create file objects for socket I/O
