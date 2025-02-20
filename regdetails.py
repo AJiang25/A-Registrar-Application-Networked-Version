@@ -9,6 +9,11 @@ import sys
 import argparse
 import socket
 import json
+import textwrap
+#-----------------------------------------------------------------------
+def print_wrapped(text):
+    print(textwrap.fill(text, width = 72, break_long_words=False,
+                        replace_whitespace=False, subsequent_indent=" "*3))
 #-----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description =
@@ -23,6 +28,8 @@ def main():
     try:
         # Parses the stdin arguments
         args = parser.parse_args()
+        host = sys.argv[1]
+        port = int(sys.argv[2])
         
         # Create request object
         request = ['get_details', {
@@ -33,7 +40,20 @@ def main():
         json_request = json.dumps(request)
         
         with socket.socket() as sock:
-            sock.connect((args.host, args.port)) 
+            sock.connect((host, port)) 
+            writer = sock.makefile(mode='w', encoding='ascii')
+            reader = sock.makefile(mode='r', encoding='ascii')
+            
+            # Send the request to the server
+            writer.write(json_request + '\n')
+            writer.flush()
+            
+            # Processes the response
+            response = reader.readline()
+            if response:
+                response_data = json.loads(response)
+                for line in response_data:
+                    print(line, end='') 
             
             # Something like this...?
             
