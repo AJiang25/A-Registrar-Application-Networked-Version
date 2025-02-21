@@ -20,18 +20,26 @@ import threading
 
 #-----------------------------------------------------------------------
 class ClientHandlerThread (threading.Thread):
+    
     def __init__(self, sock):
         threading.Thread.__init__(self)
         self._sock = sock
     
     def run(self):
+        # Add Try and Except 
         print('Spawned child thread')
+        DATABASE_URL = 'file:reg.sqlite?mode=ro'
     
         reader = self.sock.makefile(mode='r', encoding='ascii')
         json_str = reader.readline()
         data = json.loads(json_str)
+        
+        # move into helper functions and handle things where you may return false
         with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
             with contextlib.closing(connection.cursor()) as cursor:
+                
+                # After checking if request is valid, then delay
+                
                 if(data[0]=='get_overviews'):
                     getOverviews(cursor = cursor, dept = data['dept'], num = data['coursenum'],
                                area = data['area'], title = data['title'])
@@ -42,6 +50,8 @@ class ClientHandlerThread (threading.Thread):
 
         print('Closed socket in child thread')
         print('Exiting child thread')
+        
+        #Make a writer to send the response
 
 #-----------------------------------------------------------------------
 def getOverviews(cursor, dept = None, num = None, area = None, title = None):
