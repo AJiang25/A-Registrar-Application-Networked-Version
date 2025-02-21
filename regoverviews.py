@@ -17,8 +17,11 @@ def print_wrapped(text):
 #-----------------------------------------------------------------------
 def sendRequest(args, sock):
     # Create request object
-    request = ['get_details', {
-        'class_id': args.class_id
+    request = ['get_overviews', {
+        'dept': args.d if args.d else '',
+        'coursenum': args.n if args.n else '',
+        'area': args.a if args.a else '',
+        'title': args.t if args.t else ''
     }]
         
     # Converts the request object to json
@@ -45,12 +48,11 @@ def validateResponse(args, response):
         for line in response_data:
             print_wrapped(line, end='') 
             
-    elif not response: 
-        print(f"{sys.argv[0]}: no class with classid " +
-                          str(args.classid) + " exists", file=sys.stderr)
-        sys.exit(1)
+    # elif not response: 
+    #     print(f"{sys.argv[0]}: no class with classid " +
+    #                       str(args.classid) + " exists", file=sys.stderr)
+    #     sys.exit(1)
                     
-
 #-----------------------------------------------------------------------
 
 def main():
@@ -75,53 +77,11 @@ def main():
         host = sys.argv[1]
         port = int(sys.argv[2])
         
-        
-        # Create request object
-        request = ['get_overviews', {
-            'dept': args.d if args.d else '',
-            'coursenum': args.n if args.n else '',
-            'area': args.a if args.a else '',
-            'title': args.t if args.t else ''
-        }]
-        
-        # Converts the request object to json
-        json_request = json.dumps(request)
-        
         with socket.socket() as sock:
             sock.connect((host, port)) 
-            writer = sock.makefile(mode='w', encoding='ascii')
-            reader = sock.makefile(mode='r', encoding='ascii')
-            
-            # Send the request to the server
-            writer.write(json_request + '\n')
-            writer.flush()
-            
-            # Processes the response
-            response = reader.readline()
-            if response:
-                response_data = json.loads(response)
-                for line in response_data:
-                    print_wrapped(line, end='')
-            
-            
-        #     # Create file objects for socket I/O
-        #     with sock.makefile(mode='w', encoding='utf-8') as writer:
-        #         with sock.makefile(mode='r', encoding='utf-8') as reader:
-                    
-        #             # Send request to server
-        #             writer.write(json_request + '\n')
-        #             writer.flush()
-                    
-        #             # Receive and print response
-        #             response = reader.readline()
-        #             if response:
-        #                 response_data = json.loads(response)
-        #                 if isinstance(response_data, list) and len(response_data) == 2:
-        #                     if response_data[0]:  # Success
-        #                         print(response_data[1])  # Print formatted results
-        #                     else:
-        #                         print(f"Error: {response_data[1]}", file=sys.stderr)
-        #                         sys.exit(1)
+            sendRequest(args, sock)
+            response = receiveResponse()
+            validateResponse(response)
        
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
