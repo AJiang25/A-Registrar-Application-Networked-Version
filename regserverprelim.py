@@ -31,34 +31,36 @@ class ClientHandlerThread (threading.Thread):
             data = readRequest(self._sock)
         
             # move into helper functions and handle things where you may return false
-            
                 
             # After checking if request is valid, then delay
                 
             if(data[0]=='get_overviews'):
-                getOverviews(dept = data['dept'], num = data['coursenum'],
+                response = getOverviews(dept = data['dept'], num = data['coursenum'],
                                area = data['area'], title = data['title'])
             elif(data[0]=='get_details'):
-                getDetails(classid=data['classid'])
-            #response = json.loads(json_str)
-
-
+                response = getDetails(classid=data['classid'])
+            
+            writeResponse(response, self._sock)
             print('Closed socket in child thread')
             print('Exiting child thread')
 
         except Exception as e:
             print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
             sys.exit(1)
-        
-        
-        #Make a writer to send the response
-
+#-----------------------------------------------------------------------
 def readRequest(sock):
-        reader = sock.makefile(mode='r', encoding='ascii')
-        json_str = reader.readline()
-        data = json.loads(json_str)
-        return data
-
+    reader = sock.makefile(mode='r', encoding='ascii')
+    json_str = reader.readline()
+    data = json.loads(json_str)
+    return data
+#-----------------------------------------------------------------------
+def writeResponse(response, sock):
+    writer = sock.makefile(mode='w', encoding='ascii')
+    
+    # Converts the response object to json
+    json_response = json.dumps(response)
+    writer.write(json_response + '\n')
+    writer.flush()
 #-----------------------------------------------------------------------
 def getOverviews(dept = None, num = None, area = None, title = None):
     DATABASE_URL = 'file:reg.sqlite?mode=ro'
@@ -178,7 +180,6 @@ def getDetails(classid = None):
 
 #-----------------------------------------------------------------------
 def main():
-    DATABASE_URL = 'file:reg.sqlite?mode=ro'
 
     parser = argparse.ArgumentParser(description =
                                      'Server for the registrar application')
