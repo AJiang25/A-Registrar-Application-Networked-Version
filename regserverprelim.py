@@ -17,6 +17,11 @@ import socket
 import json
 import os
 import threading
+import time 
+#-----------------------------------------------------------------------
+
+CDELAY = int(os.environ.get('CDELAY','0'))
+IODELAY = int(os.environ.get('IODELAY', '0'))
 
 #-----------------------------------------------------------------------
 class ClientHandlerThread (threading.Thread):
@@ -28,19 +33,10 @@ class ClientHandlerThread (threading.Thread):
     def run(self):
         try:
             print('Spawned child thread')
-            data = readRequest(self._sock)
-        
+            with self._sock:
+                handleClient(self._sock)
             # move into helper functions and handle things where you may return false
-                
             # After checking if request is valid, then delay
-                
-            if(data[0]=='get_overviews'):
-                response = getOverviews(dept = data['dept'], num = data['coursenum'],
-                               area = data['area'], title = data['title'])
-            elif(data[0]=='get_details'):
-                response = getDetails(classid=data['classid'])
-            
-            writeResponse(response, self._sock)
             print('Closed socket in child thread')
             print('Exiting child thread')
 
@@ -48,11 +44,37 @@ class ClientHandlerThread (threading.Thread):
             print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
             sys.exit(1)
 #-----------------------------------------------------------------------
+def consume_cpu_time(delay):
+    initial_thread_time = time.thread_time()
+    while (time.thread_time() - initial_thread_time) < delay:
+        pass
+
+#-----------------------------------------------------------------------
+def handleClient(sock):
+    data = readRequest(sock)
+    checkRequest(data)
+    
+    time.sleep(IODELAY)
+    consume_cpu_time(CDELAY)
+
+    if(data[0]=='get_overviews'):
+        response = getOverviews(dept = data['dept'], num = data['coursenum'],
+                               area = data['area'], title = data['title'])
+    elif(data[0]=='get_details'):
+        response = getDetails(classid=data['classid'])
+    writeResponse(response, sock)
+    
+#-----------------------------------------------------------------------
 def readRequest(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     json_str = reader.readline()
     data = json.loads(json_str)
     return data
+
+#-----------------------------------------------------------------------
+def checkRequest(data):
+    data
+
 #-----------------------------------------------------------------------
 def writeResponse(response, sock):
     writer = sock.makefile(mode='w', encoding='ascii')
@@ -63,9 +85,12 @@ def writeResponse(response, sock):
     writer.flush()
 #-----------------------------------------------------------------------
 def getOverviews(dept = None, num = None, area = None, title = None):
+    
     DATABASE_URL = 'file:reg.sqlite?mode=ro'
+    
     with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
         with contextlib.closing(connection.cursor()) as cursor:
+            
             conditions = []
             descriptors = []
             query = """
