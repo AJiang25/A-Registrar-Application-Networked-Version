@@ -26,143 +26,155 @@ class ClientHandlerThread (threading.Thread):
         self._sock = sock
     
     def run(self):
-        # Add Try and Except 
-        print('Spawned child thread')
-        DATABASE_URL = 'file:reg.sqlite?mode=ro'
-    
-        reader = self.sock.makefile(mode='r', encoding='ascii')
-        json_str = reader.readline()
-        data = json.loads(json_str)
+        try:
+            print('Spawned child thread')
+            data = readRequest(self._sock)
         
-        # move into helper functions and handle things where you may return false
-        with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
-            with contextlib.closing(connection.cursor()) as cursor:
+            # move into helper functions and handle things where you may return false
+            
                 
-                # After checking if request is valid, then delay
+            # After checking if request is valid, then delay
                 
-                if(data[0]=='get_overviews'):
-                    getOverviews(cursor = cursor, dept = data['dept'], num = data['coursenum'],
+            if(data[0]=='get_overviews'):
+                getOverviews(dept = data['dept'], num = data['coursenum'],
                                area = data['area'], title = data['title'])
-                elif(data[0]=='get_details'):
-                    getDetails(cursor = cursor, classid=data['classid'])
-        #response = json.loads(json_str)
+            elif(data[0]=='get_details'):
+                getDetails(classid=data['classid'])
+            #response = json.loads(json_str)
 
 
-        print('Closed socket in child thread')
-        print('Exiting child thread')
+            print('Closed socket in child thread')
+            print('Exiting child thread')
+
+        except Exception as e:
+            print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
+            sys.exit(1)
+        
         
         #Make a writer to send the response
 
-#-----------------------------------------------------------------------
-def getOverviews(cursor, dept = None, num = None, area = None, title = None):
-    conditions = []
-    descriptors = []
-    query = """
-        SELECT DISTINCT cl.classid, cr.dept, cr.coursenum, c.area, c.title 
-        FROM courses c 
-        JOIN crosslistings cr ON c.courseid = cr.courseid 
-        JOIN classes cl ON c.courseid = cl.courseid
-    """
-    if dept:
-        conditions.append("cr.dept LIKE ? ESCAPE '\\'")
-        descriptor = dept.lower().replace("%", r"\%").replace("_", r"\_")
-        descriptors.append(f"%{descriptor}%")
-    if num:
-        conditions.append("cr.coursenum LIKE ? ESCAPE '\\'")
-        descriptor = num.lower().replace("%", r"\%").replace("_", r"\_")
-        descriptors.append(f"%{descriptor}%")
-    if area:
-        conditions.append("c.area LIKE ? ESCAPE '\\'")
-        descriptor = area.lower().replace("%", r"\%").replace("_", r"\_")
-        descriptors.append(f"%{descriptor}%")
-    if title:
-        conditions.append("c.title LIKE ? ESCAPE '\\'")
-        descriptor = title.lower().replace("%", r"\%").replace("_", r"\_")
-        descriptors.append(f"%{descriptor}%")
-    if conditions:
-        query += "WHERE " + " AND ".join(conditions)
+def readRequest(sock):
+        reader = sock.makefile(mode='r', encoding='ascii')
+        json_str = reader.readline()
+        data = json.loads(json_str)
+        return data
 
-    query += "ORDER BY cr.dept ASC, cr.coursenum ASC, cl.classid ASC;"
-    cursor.execute(query, descriptors)
-    ans = cursor.fetchall()
+#-----------------------------------------------------------------------
+def getOverviews(dept = None, num = None, area = None, title = None):
+    DATABASE_URL = 'file:reg.sqlite?mode=ro'
+    with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
+        with contextlib.closing(connection.cursor()) as cursor:
+            conditions = []
+            descriptors = []
+            query = """
+                SELECT DISTINCT cl.classid, cr.dept, cr.coursenum, c.area, c.title 
+                FROM courses c 
+                JOIN crosslistings cr ON c.courseid = cr.courseid 
+                JOIN classes cl ON c.courseid = cl.courseid
+            """
+            if dept:
+                conditions.append("cr.dept LIKE ? ESCAPE '\\'")
+                descriptor = dept.lower().replace("%", r"\%").replace("_", r"\_")
+                descriptors.append(f"%{descriptor}%")
+            if num:
+                conditions.append("cr.coursenum LIKE ? ESCAPE '\\'")
+                descriptor = num.lower().replace("%", r"\%").replace("_", r"\_")
+                descriptors.append(f"%{descriptor}%")
+            if area:
+                conditions.append("c.area LIKE ? ESCAPE '\\'")
+                descriptor = area.lower().replace("%", r"\%").replace("_", r"\_")
+                descriptors.append(f"%{descriptor}%")
+            if title:
+                conditions.append("c.title LIKE ? ESCAPE '\\'")
+                descriptor = title.lower().replace("%", r"\%").replace("_", r"\_")
+                descriptors.append(f"%{descriptor}%")
+            if conditions:
+                query += "WHERE " + " AND ".join(conditions)
+
+            query += "ORDER BY cr.dept ASC, cr.coursenum ASC, cl.classid ASC;"
+            cursor.execute(query, descriptors)
+            ans = cursor.fetchall()
 
     # print('%5s %4s %6s %4s %s' % ("ClsId", "Dept", "CrsNum", "Area", "Title"))
     # print('%5s %4s %6s %4s %s' % ("-----", "----", "------", "----", "-----"))
 
-    for row in ans:
-        res = '%5s %4s %6s %4s %s' % (row[0], row[1], row[2], row[3], row[4])
-        # print(textwrap.fill(res, width = 72, break_long_words= False, subsequent_indent=" "*23))
+            for row in ans:
+                res = '%5s %4s %6s %4s %s' % (row[0], row[1], row[2], row[3], row[4])
+                # print(textwrap.fill(res, width = 72, break_long_words= False, subsequent_indent=" "*23))
 
 #-----------------------------------------------------------------------
-def getDetails(cursor, classid = None):
-    class_query = """
-        SELECT classid, days, starttime, endtime, bldg, roomnum, courseid
-        FROM classes
-        WHERE classid = ?
-    """
-    course_query = """
-        SELECT DISTINCT c.courseid, c.area, c.title, c.descrip, c.prereqs
-            FROM courses c
-            WHERE c.courseid = ?
-    """
-    dept_query = """
-        SELECT DISTINCT cr.dept, cr.coursenum
-            FROM crosslistings cr
-            WHERE cr.courseid = ?
-            ORDER BY cr.dept ASC, cr.coursenum ASC
-    """
-    prof_query = """
-        SELECT DISTINCT p.profname
-            FROM courses c
-            JOIN coursesprofs cp ON c.courseid = cp.courseid
-            JOIN profs p ON cp.profid = p.profid
-            WHERE c.courseid = ?
-            ORDER BY p.profname ASC
-    """
+def getDetails(classid = None):
+    DATABASE_URL = 'file:reg.sqlite?mode=ro'
+    with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
+        with contextlib.closing(connection.cursor()) as cursor:
+            class_query = """
+                SELECT classid, days, starttime, endtime, bldg, roomnum, courseid
+                FROM classes
+                WHERE classid = ?
+            """
+            course_query = """
+                SELECT DISTINCT c.courseid, c.area, c.title, c.descrip, c.prereqs
+                    FROM courses c
+                    WHERE c.courseid = ?
+            """
+            dept_query = """
+                SELECT DISTINCT cr.dept, cr.coursenum
+                    FROM crosslistings cr
+                    WHERE cr.courseid = ?
+                    ORDER BY cr.dept ASC, cr.coursenum ASC
+            """
+            prof_query = """
+                SELECT DISTINCT p.profname
+                    FROM courses c
+                    JOIN coursesprofs cp ON c.courseid = cp.courseid
+                    JOIN profs p ON cp.profid = p.profid
+                    WHERE c.courseid = ?
+                    ORDER BY p.profname ASC
+            """
 
-    cursor.execute(class_query, [classid])
-    class_row = cursor.fetchall()
-    if not class_row:
-        return False
+            cursor.execute(class_query, [classid])
+            class_row = cursor.fetchall()
+            if not class_row:
+                return False
 
-    courseid = class_row[0][6]
+            courseid = class_row[0][6]
 
-    cursor.execute(course_query, [courseid])
-    course_row = cursor.fetchone()
+            cursor.execute(course_query, [courseid])
+            course_row = cursor.fetchone()
 
-    cursor.execute(dept_query, [courseid])
-    dept_row = cursor.fetchall()
+            cursor.execute(dept_query, [courseid])
+            dept_row = cursor.fetchall()
 
-    cursor.execute(prof_query, [courseid])
-    prof_row = cursor.fetchall()
+            cursor.execute(prof_query, [courseid])
+            prof_row = cursor.fetchall()
 
-    print('-------------')
-    print('Class Details')
-    print('-------------')
-    for row in class_row:
-        print_wrapped(f"Class Id: {row[0]}")
-        print_wrapped(f"Days: {row[1]}")
-        print_wrapped(f"Start time: {row[2]}")
-        print_wrapped(f"End time: {row[3]}")
-        print_wrapped(f"Building: {row[4]}")
-        print_wrapped(f"Room: {row[5]}")
+            print('-------------')
+            print('Class Details')
+            print('-------------')
+            for row in class_row:
+                print_wrapped(f"Class Id: {row[0]}")
+                print_wrapped(f"Days: {row[1]}")
+                print_wrapped(f"Start time: {row[2]}")
+                print_wrapped(f"End time: {row[3]}")
+                print_wrapped(f"Building: {row[4]}")
+                print_wrapped(f"Room: {row[5]}")
 
-    print('--------------')
-    print('Course Details')
-    print('--------------')
+            print('--------------')
+            print('Course Details')
+            print('--------------')
 
-    print_wrapped(f"Course Id: {course_row[0]}")
-    for dept in dept_row:
-        print_wrapped(f"Dept and Number: {dept[0]} {dept[1]}")
-    print_wrapped(f"Area: {course_row[1]}")
+            print_wrapped(f"Course Id: {course_row[0]}")
+            for dept in dept_row:
+                print_wrapped(f"Dept and Number: {dept[0]} {dept[1]}")
+            print_wrapped(f"Area: {course_row[1]}")
 
-    print_wrapped(f"Title: {course_row[2]}")
-    print_wrapped(f"Description: {course_row[3]}")
-    print_wrapped(f"Prerequisites: {course_row[4]}")
+            print_wrapped(f"Title: {course_row[2]}")
+            print_wrapped(f"Description: {course_row[3]}")
+            print_wrapped(f"Prerequisites: {course_row[4]}")
 
-    for prof in prof_row:
-        print_wrapped(f"Professor: {prof[0]}")
-    return True
+            for prof in prof_row:
+                print_wrapped(f"Professor: {prof[0]}")
+            return True
 
 #-----------------------------------------------------------------------
 def main():
