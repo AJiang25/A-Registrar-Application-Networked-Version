@@ -49,8 +49,6 @@ def validateResponse(args, response):
         print(f"{sys.argv[0]}: no class with classid " +
                           str(args.classid) + " exists", file=sys.stderr)
         sys.exit(1)
-                    
-
 #-----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description =
