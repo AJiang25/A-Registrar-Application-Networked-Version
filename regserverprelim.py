@@ -4,20 +4,16 @@
 # regserverprelim.py
 # Authors: Arnold Jiang and Amanda Chan
 #-----------------------------------------------------------------------
-
-#-----------------------------------------------------------------------
 # imports
 import sys
 import sqlite3
-import textwrap
 import argparse
 import contextlib
-
-import socket 
+import socket
 import json
 import os
 import threading
-import time 
+import time
 #-----------------------------------------------------------------------
 
 CDELAY = int(os.environ.get('CDELAY','0'))
@@ -25,18 +21,16 @@ IODELAY = int(os.environ.get('IODELAY', '0'))
 
 #-----------------------------------------------------------------------
 class ClientHandlerThread (threading.Thread):
-    
+
     def __init__(self, sock):
         threading.Thread.__init__(self)
         self._sock = sock
-    
+
     def run(self):
         try:
             print('Spawned child thread')
             with self._sock:
                 handleClient(self._sock)
-            # move into helper functions and handle things where you may return false
-            # After checking if request is valid, then delay
             print('Closed socket in child thread')
             print('Exiting child thread')
 
@@ -53,15 +47,18 @@ def consume_cpu_time(delay):
 def handleClient(sock):
     data = readRequest(sock)
     checkRequest(data)
-    
+
     time.sleep(IODELAY)
     consume_cpu_time(CDELAY)
 
     if(data[0]=='get_overviews'):
+        # data[1].get('dept', '')
         response = getOverviews(dept = data['dept'], num = data['coursenum'],
                                area = data['area'], title = data['title'])
     elif(data[0]=='get_details'):
         response = getDetails(classid=data['classid'])
+    else:
+        response = [False, "Invalid Request"]
     writeResponse(response, sock)
     
 #-----------------------------------------------------------------------
@@ -120,20 +117,26 @@ def getOverviews(dept = None, num = None, area = None, title = None):
 
             query += "ORDER BY cr.dept ASC, cr.coursenum ASC, cl.classid ASC;"
             cursor.execute(query, descriptors)
-            ans = cursor.fetchall()
-
-    # print('%5s %4s %6s %4s %s' % ("ClsId", "Dept", "CrsNum", "Area", "Title"))
-    # print('%5s %4s %6s %4s %s' % ("-----", "----", "------", "----", "-----"))
-
-            for row in ans:
-                res = '%5s %4s %6s %4s %s' % (row[0], row[1], row[2], row[3], row[4])
-                # print(textwrap.fill(res, width = 72, break_long_words= False, subsequent_indent=" "*23))
+            courses = cursor.fetchall()
+            result = []
+            for row in courses:
+                result.append({
+                    'classid': row[0],
+                    'dept': row[1],
+                    'coursenum': row[2],
+                    'area': row[3],
+                    'title': row[4]
+                })
+            return [True, result]      
 
 #-----------------------------------------------------------------------
 def getDetails(classid = None):
+
     DATABASE_URL = 'file:reg.sqlite?mode=ro'
+
     with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
         with contextlib.closing(connection.cursor()) as cursor:
+
             class_query = """
                 SELECT classid, days, starttime, endtime, bldg, roomnum, courseid
                 FROM classes
@@ -174,34 +177,23 @@ def getDetails(classid = None):
 
             cursor.execute(prof_query, [courseid])
             prof_row = cursor.fetchall()
-
-            print('-------------')
-            print('Class Details')
-            print('-------------')
-            for row in class_row:
-                print_wrapped(f"Class Id: {row[0]}")
-                print_wrapped(f"Days: {row[1]}")
-                print_wrapped(f"Start time: {row[2]}")
-                print_wrapped(f"End time: {row[3]}")
-                print_wrapped(f"Building: {row[4]}")
-                print_wrapped(f"Room: {row[5]}")
-
-            print('--------------')
-            print('Course Details')
-            print('--------------')
-
-            print_wrapped(f"Course Id: {course_row[0]}")
-            for dept in dept_row:
-                print_wrapped(f"Dept and Number: {dept[0]} {dept[1]}")
-            print_wrapped(f"Area: {course_row[1]}")
-
-            print_wrapped(f"Title: {course_row[2]}")
-            print_wrapped(f"Description: {course_row[3]}")
-            print_wrapped(f"Prerequisites: {course_row[4]}")
-
-            for prof in prof_row:
-                print_wrapped(f"Professor: {prof[0]}")
-            return True
+            
+            result = {
+                'classid': course_row[0],
+                'days': course_row[1],
+                'starttime': course_row[2],
+                'endtime': course_row[3],
+                'bldg': course_row[4],
+                'roomnum': course_row[5],
+                'courseid': courseid,
+                'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
+                'area': course_row[5],
+                'title': course_row[5],
+                'description': course_row[5],
+                'prereqs': course_row[5],
+                'profnames': [prof[0] for prof in prof_row]
+            }
+            return [True, result]
 
 #-----------------------------------------------------------------------
 def main():
@@ -214,7 +206,6 @@ def main():
     try:
         # Parses the stdin arguments
         args = parser.parse_args()
-
         server_sock = socket.socket()
         print('Opened server socket')
         if os.name != 'nt':
@@ -252,10 +243,7 @@ def main():
                 #     #handle_client(sock)
                 # DON'T NEED THIS END
 
-                # Connects to the database and creates a curser connection
-                with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
-                    with contextlib.closing(connection.cursor()) as cursor:
-                        handle_client(sock)
+                handleClient(sock)
 
             except Exception as ex:
                 print(ex, file=sys.stderr)    
