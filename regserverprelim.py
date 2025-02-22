@@ -19,6 +19,8 @@ import time
 CDELAY = int(os.environ.get('CDELAY','0'))
 IODELAY = int(os.environ.get('IODELAY', '0'))
 
+DATABASE_URL = 'file:reg.sqlite?mode=ro'
+
 #-----------------------------------------------------------------------
 class ClientHandlerThread (threading.Thread):
 
@@ -45,20 +47,28 @@ def consume_cpu_time(delay):
 
 #-----------------------------------------------------------------------
 def handleClient(sock):
-    data = readRequest(sock)
-    checkRequest(data)
+    try: 
+        data = readRequest(sock)
+        checkRequest(data)
 
-    time.sleep(IODELAY)
-    consume_cpu_time(CDELAY)
+        time.sleep(IODELAY)
+        consume_cpu_time(CDELAY)
 
-    if(data[0]=='get_overviews'):
-        # data[1].get('dept', '')
-        response = getOverviews(dept = data['dept'], num = data['coursenum'],
-                               area = data['area'], title = data['title'])
-    elif(data[0]=='get_details'):
-        response = getDetails(classid=data['classid'])
-    else:
-        response = [False, "Invalid Request"]
+        requestType = data[0]
+        parameters = data[1]
+
+        if(requestType=='get_overviews'):
+            response = getOverviews(parameters)
+        elif(data[0]=='get_details'):
+            response = getDetails(parameters)
+        else:
+            response = [False, "Invalid Request"]
+    except ValueError as ve:
+        response = [False, str(ve)]
+    except Exception as e:
+        response = [False, "A server error occurred. Please contact the system administrator."]
+
+
     writeResponse(response, sock)
     
 #-----------------------------------------------------------------------
@@ -69,8 +79,41 @@ def readRequest(sock):
     return data
 
 #-----------------------------------------------------------------------
-def checkRequest(data):
-    data
+def checkRequest(data):    
+    #use isinstance in check request
+    # if this request is not an instance of the list
+    # communication protocol in assignmetn specs 
+    # break them down into specific error messages  
+    if not isinstance(data, list) or len(data) != 2:
+        raise ValueError("Invalid format: Request must be a list with two elements.")
+
+    request_type = data[0]
+    parameters = data[1]
+
+    if not isinstance(request_type, str):
+        raise ValueError("Invalid format: First element must be a string.")
+
+    if request_type == "get_overviews":
+        if not isinstance(parameters, dict):
+            raise ValueError("Invalid format: Expected a dictionary for get_overview parameters.")
+        
+        required_keys = {"dept", "coursenum", "area", "title"}
+        if set(parameters.keys()) != required_keys:
+            raise ValueError("Invalid format: Parameters must contain only 'dept', 'coursenum', 'area', and 'title'.")
+
+        for key, value in parameters.items():
+            if not isinstance(value, str):
+                raise ValueError(f"Invalid format: '{key}' must be a string.")
+
+    elif request_type == "get_details":
+        if not isinstance(parameters, int):
+            raise ValueError("Invalid format: Expected an integer for classid in get_details request.")
+
+        if parameters <= 0:
+            raise ValueError("Invalid format: classid must be a positive integer.")
+
+    else:
+        raise ValueError("Invalid type: Request type must be 'get_overviews' or 'get_details'.")
 
 #-----------------------------------------------------------------------
 def writeResponse(response, sock):
@@ -81,119 +124,129 @@ def writeResponse(response, sock):
     writer.write(json_response + '\n')
     writer.flush()
 #-----------------------------------------------------------------------
-def getOverviews(dept = None, num = None, area = None, title = None):
-    
-    DATABASE_URL = 'file:reg.sqlite?mode=ro'
-    
-    with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
-        with contextlib.closing(connection.cursor()) as cursor:
-            
-            conditions = []
-            descriptors = []
-            query = """
-                SELECT DISTINCT cl.classid, cr.dept, cr.coursenum, c.area, c.title 
-                FROM courses c 
-                JOIN crosslistings cr ON c.courseid = cr.courseid 
-                JOIN classes cl ON c.courseid = cl.courseid
-            """
-            if dept:
-                conditions.append("cr.dept LIKE ? ESCAPE '\\'")
-                descriptor = dept.lower().replace("%", r"\%").replace("_", r"\_")
-                descriptors.append(f"%{descriptor}%")
-            if num:
-                conditions.append("cr.coursenum LIKE ? ESCAPE '\\'")
-                descriptor = num.lower().replace("%", r"\%").replace("_", r"\_")
-                descriptors.append(f"%{descriptor}%")
-            if area:
-                conditions.append("c.area LIKE ? ESCAPE '\\'")
-                descriptor = area.lower().replace("%", r"\%").replace("_", r"\_")
-                descriptors.append(f"%{descriptor}%")
-            if title:
-                conditions.append("c.title LIKE ? ESCAPE '\\'")
-                descriptor = title.lower().replace("%", r"\%").replace("_", r"\_")
-                descriptors.append(f"%{descriptor}%")
-            if conditions:
-                query += "WHERE " + " AND ".join(conditions)
+def getOverviews(parameters):
 
-            query += "ORDER BY cr.dept ASC, cr.coursenum ASC, cl.classid ASC;"
-            cursor.execute(query, descriptors)
-            courses = cursor.fetchall()
-            result = []
-            for row in courses:
-                result.append({
-                    'classid': row[0],
-                    'dept': row[1],
-                    'coursenum': row[2],
-                    'area': row[3],
-                    'title': row[4]
-                })
-            return [True, result]      
+    dept = parameters.get("dept", "")
+    coursenum = parameters.get("coursenum", "")
+    area=parameters.get("area", "")
+    title =parameters.get("title", "")
+                         
+    try:
+        with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
+            with contextlib.closing(connection.cursor()) as cursor:
+                
+                conditions = []
+                descriptors = []
+                query = """
+                    SELECT DISTINCT cl.classid, cr.dept, cr.coursenum, c.area, c.title 
+                    FROM courses c 
+                    JOIN crosslistings cr ON c.courseid = cr.courseid 
+                    JOIN classes cl ON c.courseid = cl.courseid
+                """
+                if dept:
+                    conditions.append("cr.dept LIKE ? ESCAPE '\\'")
+                    descriptor = dept.lower().replace("%", r"\%").replace("_", r"\_")
+                    descriptors.append(f"%{descriptor}%")
+                if coursenum:
+                    conditions.append("cr.coursenum LIKE ? ESCAPE '\\'")
+                    descriptor = coursenum.lower().replace("%", r"\%").replace("_", r"\_")
+                    descriptors.append(f"%{descriptor}%")
+                if area:
+                    conditions.append("c.area LIKE ? ESCAPE '\\'")
+                    descriptor = area.lower().replace("%", r"\%").replace("_", r"\_")
+                    descriptors.append(f"%{descriptor}%")
+                if title:
+                    conditions.append("c.title LIKE ? ESCAPE '\\'")
+                    descriptor = title.lower().replace("%", r"\%").replace("_", r"\_")
+                    descriptors.append(f"%{descriptor}%")
+                if conditions:
+                    query += "WHERE " + " AND ".join(conditions)
+
+                query += "ORDER BY cr.dept ASC, cr.coursenum ASC, cl.classid ASC;"
+                cursor.execute(query, descriptors)
+                courses = cursor.fetchall()
+                result = []
+                for row in courses:
+                    result.append({
+                        'classid': row[0],
+                        'dept': row[1],
+                        'coursenum': row[2],
+                        'area': row[3],
+                        'title': row[4]
+                    })
+                return [True, result]   
+
+    except Exception as e:
+        return [False, str(e)]   
 
 #-----------------------------------------------------------------------
 def getDetails(classid = None):
 
-    DATABASE_URL = 'file:reg.sqlite?mode=ro'
+    try:
 
-    with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
-        with contextlib.closing(connection.cursor()) as cursor:
+        with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
+            with contextlib.closing(connection.cursor()) as cursor:
 
-            class_query = """
-                SELECT classid, days, starttime, endtime, bldg, roomnum, courseid
-                FROM classes
-                WHERE classid = ?
-            """
-            course_query = """
-                SELECT DISTINCT c.courseid, c.area, c.title, c.descrip, c.prereqs
-                    FROM courses c
-                    WHERE c.courseid = ?
-            """
-            dept_query = """
-                SELECT DISTINCT cr.dept, cr.coursenum
-                    FROM crosslistings cr
-                    WHERE cr.courseid = ?
-                    ORDER BY cr.dept ASC, cr.coursenum ASC
-            """
-            prof_query = """
-                SELECT DISTINCT p.profname
-                    FROM courses c
-                    JOIN coursesprofs cp ON c.courseid = cp.courseid
-                    JOIN profs p ON cp.profid = p.profid
-                    WHERE c.courseid = ?
-                    ORDER BY p.profname ASC
-            """
+                class_query = """
+                    SELECT classid, days, starttime, endtime, bldg, roomnum, courseid
+                    FROM classes
+                    WHERE classid = ?
+                """
+                course_query = """
+                    SELECT DISTINCT c.courseid, c.area, c.title, c.descrip, c.prereqs
+                        FROM courses c
+                        WHERE c.courseid = ?
+                """
+                dept_query = """
+                    SELECT DISTINCT cr.dept, cr.coursenum
+                        FROM crosslistings cr
+                        WHERE cr.courseid = ?
+                        ORDER BY cr.dept ASC, cr.coursenum ASC
+                """
+                prof_query = """
+                    SELECT DISTINCT p.profname
+                        FROM courses c
+                        JOIN coursesprofs cp ON c.courseid = cp.courseid
+                        JOIN profs p ON cp.profid = p.profid
+                        WHERE c.courseid = ?
+                        ORDER BY p.profname ASC
+                """
 
-            cursor.execute(class_query, [classid])
-            class_row = cursor.fetchall()
-            if not class_row:
-                return False
+                cursor.execute(class_query, [classid])
+                class_row = cursor.fetchall()
+                if not class_row:
+                    return False
 
-            courseid = class_row[0][6]
+                courseid = class_row[0][6]
 
-            cursor.execute(course_query, [courseid])
-            course_row = cursor.fetchone()
+                cursor.execute(course_query, [courseid])
+                course_row = cursor.fetchone()
 
-            cursor.execute(dept_query, [courseid])
-            dept_row = cursor.fetchall()
+                cursor.execute(dept_query, [courseid])
+                dept_row = cursor.fetchall()
 
-            cursor.execute(prof_query, [courseid])
-            prof_row = cursor.fetchall()
+                cursor.execute(prof_query, [courseid])
+                prof_row = cursor.fetchall()
+                
+                result = {
+                    'classid': course_row[0],
+                    'days': course_row[1],
+                    'starttime': course_row[2],
+                    'endtime': course_row[3],
+                    'bldg': course_row[4],
+                    'roomnum': course_row[5],
+                    'courseid': courseid,
+                    'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
+                    'area': course_row[5],
+                    'title': course_row[5],
+                    'description': course_row[5],
+                    'prereqs': course_row[5],
+                    'profnames': [prof[0] for prof in prof_row]
+                }
+                return [True, result]
             
-            result = {
-                'classid': course_row[0],
-                'days': course_row[1],
-                'starttime': course_row[2],
-                'endtime': course_row[3],
-                'bldg': course_row[4],
-                'roomnum': course_row[5],
-                'courseid': courseid,
-                'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
-                'area': course_row[5],
-                'title': course_row[5],
-                'description': course_row[5],
-                'prereqs': course_row[5],
-                'profnames': [prof[0] for prof in prof_row]
-            }
-            return [True, result]
+    except Exception as e:
+        return [False, str(e)]
 
 #-----------------------------------------------------------------------
 def main():
