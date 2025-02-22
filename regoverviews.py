@@ -45,9 +45,15 @@ def validateResponse(args, response):
         
         # check if response is valid, handle the error -> write the response
         response_data = json.loads(response)
-        for line in response_data:
-            print_wrapped(line, end='') 
-            
+        ans = response_data[1]
+        print('%5s %4s %6s %4s %s' % ("ClsId", "Dept", "CrsNum", "Area", "Title"))
+        print('%5s %4s %6s %4s %s' % ("-----", "----", "------", "----", "-----"))
+
+        for row in ans:
+            res = '%5s %4s %6s %4s %s' % (row['classid'], row['dept'], 
+                                          row['coursenum'], row['area'], row['title'])
+            print(textwrap.fill(res, width = 72, 
+                                break_long_words= False, subsequent_indent=" "*23))
     # elif not response: 
     #     print(f"{sys.argv[0]}: no class with classid " +
     #                       str(args.classid) + " exists", file=sys.stderr)
@@ -80,8 +86,8 @@ def main():
         with socket.socket() as sock:
             sock.connect((host, port)) 
             sendRequest(args, sock)
-            response = receiveResponse()
-            validateResponse(response)
+            response = receiveResponse(sock)
+            validateResponse(args, response)
        
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
