@@ -189,7 +189,7 @@ def getDetails(classid = None):
                 'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
                 'area': course_row[5],
                 'title': course_row[5],
-                'description': course_row[5],
+                'descrip': course_row[5],
                 'prereqs': course_row[5],
                 'profnames': [prof[0] for prof in prof_row]
             }

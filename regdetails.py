@@ -17,10 +17,9 @@ def print_wrapped(text):
 #-----------------------------------------------------------------------
 def sendRequest(args, sock):
     # Create request object
-    request = ['get_details', {
-        'class_id': args.class_id
-    }]
-        
+    request = ['get_details', args.classid]
+    
+    print(request)
     # Converts the request object to json
     json_request = json.dumps(request)
             
@@ -39,11 +38,34 @@ def receiveResponse(sock):
 def validateResponse(args, response):
     # work on validation
     if response and response[0]:
+        print(response)
         
         # check if response is valid, handle the error -> write the response
         response_data = json.loads(response)
-        for line in response_data:
-            print_wrapped(line, end='') 
+        details = response_data[1]
+
+        print('-------------')
+        print('Class Details')
+        print('-------------')
+        print_wrapped(f"Class Id: {details['classid']}")
+        print_wrapped(f"Days: {details['days']}")
+        print_wrapped(f"Start time: {details['starttime']}")
+        print_wrapped(f"End time: {details['endtime']}")
+        print_wrapped(f"Building: {details['bldg']}")
+        print_wrapped(f"Room: {details['roomnum']}")
+        print('--------------')
+        print('Course Details')
+        print('--------------')
+        print_wrapped(f"Course Id: {details['courseid']}")
+        for dept in details['deptcoursenums']:
+            print_wrapped(f"Dept and Number: {dept['dept']} {dept['coursenum']}")
+        
+        print_wrapped(f"Area: {details['area']}")
+        print_wrapped(f"Title: {details['title']}")
+        print_wrapped(f"Description: {details['descrip']}")
+        print_wrapped(f"Prerequisites: {details['prereqs']}")
+        for prof in details['profnames']:
+            print_wrapped(f"Professor: {prof}")
             
     elif not response: 
         print(f"{sys.argv[0]}: no class with classid " +
