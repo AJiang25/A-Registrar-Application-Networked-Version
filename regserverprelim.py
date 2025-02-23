@@ -47,9 +47,6 @@ def consume_cpu_time(delay):
 
 #-----------------------------------------------------------------------
 def handleClient(sock):
-    request = readRequest(sock)
-    checkRequest(request)
-    
     try: 
         request = readRequest(sock)
         checkRequest(request)
@@ -70,16 +67,6 @@ def handleClient(sock):
         response = [False, str(ve)]
     except Exception as e:
         response = [False, "A server error occurred. Please contact the system administrator."]
-        
-    # if(request[0]=='get_overviews'):
-    #     data = request[1]
-    #     response = getOverviews(dept = data['dept'], num = data['coursenum'],
-    #                            area = data['area'], title = data['title'])
-    # elif(request[0]=='get_details'):
-    #     data = request[1]
-    #     response = getDetails(classid=data['classid'])
-    # else:
-    #     response = [False, "Invalid Request"]
 
     writeResponse(response, sock)
     
@@ -192,10 +179,11 @@ def getOverviews(parameters):
         return [False, str(e)]   
 
 #-----------------------------------------------------------------------
-def getDetails(classid = None):
-
+# ['get_details', 8321]
+# [false, "list index out of range"]
+# regdetails.py: string indices must be integers, not 'str'
+def getDetails(classid):
     try:
-
         with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
             with contextlib.closing(connection.cursor()) as cursor:
 
@@ -223,11 +211,13 @@ def getDetails(classid = None):
                         WHERE c.courseid = ?
                         ORDER BY p.profname ASC
                 """
+                
+                print(classid)
 
                 cursor.execute(class_query, [classid])
                 class_row = cursor.fetchall()
                 if not class_row:
-                    return False
+                    return [False, "Class not found?????"]
 
                 courseid = class_row[0][6]
 
@@ -241,18 +231,18 @@ def getDetails(classid = None):
                 prof_row = cursor.fetchall()
                 
                 result = {
-                    'classid': course_row[0],
-                    'days': course_row[1],
-                    'starttime': course_row[2],
-                    'endtime': course_row[3],
-                    'bldg': course_row[4],
-                    'roomnum': course_row[5],
-                    'courseid': courseid,
+                    'classid': class_row[0],
+                    'days': class_row[1],
+                    'starttime': class_row[2],
+                    'endtime': class_row[3],
+                    'bldg': class_row[4],
+                    'roomnum': class_row[5],
+                    'courseid': course_row[0],
                     'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
-                    'area': course_row[5],
-                    'title': course_row[5],
-                    'description': course_row[5],
-                    'prereqs': course_row[5],
+                    'area': course_row[1],
+                    'title': course_row[2],
+                    'description': course_row[3],
+                    'prereqs': course_row[4],
                     'profnames': [prof[0] for prof in prof_row]
                 }
                 return [True, result]
@@ -307,8 +297,6 @@ def main():
                 #     print('Client IP addr and port:', client_addr)
                 #     #handle_client(sock)
                 # DON'T NEED THIS END
-
-                handleClient(sock)
 
             except Exception as ex:
                 print(ex, file=sys.stderr)    
