@@ -47,19 +47,22 @@ def consume_cpu_time(delay):
 
 #-----------------------------------------------------------------------
 def handleClient(sock):
+    request = readRequest(sock)
+    checkRequest(request)
+    
     try: 
-        data = readRequest(sock)
-        checkRequest(data)
+        request = readRequest(sock)
+        checkRequest(request)
 
         time.sleep(IODELAY)
         consume_cpu_time(CDELAY)
 
-        requestType = data[0]
-        parameters = data[1]
+        requestType = request[0]
+        parameters = request[1]
 
         if(requestType=='get_overviews'):
             response = getOverviews(parameters)
-        elif(data[0]=='get_details'):
+        elif(requestType=='get_details'):
             response = getDetails(parameters)
         else:
             response = [False, "Invalid Request"]
@@ -67,7 +70,16 @@ def handleClient(sock):
         response = [False, str(ve)]
     except Exception as e:
         response = [False, "A server error occurred. Please contact the system administrator."]
-
+        
+    # if(request[0]=='get_overviews'):
+    #     data = request[1]
+    #     response = getOverviews(dept = data['dept'], num = data['coursenum'],
+    #                            area = data['area'], title = data['title'])
+    # elif(request[0]=='get_details'):
+    #     data = request[1]
+    #     response = getDetails(classid=data['classid'])
+    # else:
+    #     response = [False, "Invalid Request"]
 
     writeResponse(response, sock)
     
