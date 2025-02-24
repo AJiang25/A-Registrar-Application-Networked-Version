@@ -120,6 +120,7 @@ def writeResponse(response, sock):
     
     # Converts the response object to json
     json_response = json.dumps(response)
+    print(json_response)
     writer.write(json_response + '\n')
     writer.flush()
 #-----------------------------------------------------------------------
@@ -212,17 +213,21 @@ def getDetails(classid):
                         ORDER BY p.profname ASC
                 """
                 
-                print(classid)
-
+                print("class id: ", classid)
                 cursor.execute(class_query, [classid])
-                class_row = cursor.fetchall()
+                
+                # DO WE NEED TO FETCH ALL??????
+                class_row = cursor.fetchone()
                 if not class_row:
-                    return [False, "Class not found?????"]
+                    return [False, "Class not found"]
 
-                courseid = class_row[0][6]
+                # courseid = class_row[0][6]
+                courseid = class_row[6]
 
                 cursor.execute(course_query, [courseid])
                 course_row = cursor.fetchone()
+                if not course_row:
+                    return [False, "Course not found"]
 
                 cursor.execute(dept_query, [courseid])
                 dept_row = cursor.fetchall()
@@ -233,7 +238,7 @@ def getDetails(classid):
                 result = {
                     'classid': class_row[0],
                     'days': class_row[1],
-                    'starttime': class_row[2],
+                    'starttime': class_row[2], 
                     'endtime': class_row[3],
                     'bldg': class_row[4],
                     'roomnum': class_row[5],
@@ -241,10 +246,11 @@ def getDetails(classid):
                     'deptcoursenums': [{'dept': dept[0], 'coursenum': dept[1]} for dept in dept_row],
                     'area': course_row[1],
                     'title': course_row[2],
-                    'description': course_row[3],
+                    'descrip': course_row[3],
                     'prereqs': course_row[4],
                     'profnames': [prof[0] for prof in prof_row]
                 }
+                
                 return [True, result]
             
     except Exception as e:

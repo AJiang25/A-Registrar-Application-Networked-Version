@@ -18,8 +18,7 @@ def print_wrapped(text):
 def sendRequest(args, sock):
     # Create request object
     request = ['get_details', args.classid]
-    
-    print(request)
+
     # Converts the request object to json
     json_request = json.dumps(request)
             
@@ -32,18 +31,43 @@ def sendRequest(args, sock):
 def receiveResponse(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     response = reader.readline()
-    return response
+    details = json.loads(response)
+    return details
     
 #-----------------------------------------------------------------------
 def validateResponse(args, response):
-    # work on validation
-    if response and response[0]:
-        print(response)
-        
-        # check if response is valid, handle the error -> write the response
-        response_data = json.loads(response)
-        details = response_data[1]
+    try: 
+        if isinstance(response[0], bool): 
+            if isinstance(response[1], dict):
+                details = response[1]
+                
+                # Check if the fields exist
+                fields = ['classid', 'days', 'starttime', 'endtime', 'bldg', 'roomnum', 
+                            'courseid', 'deptcoursenums', 'area', 'title', 'descrip',
+                            'prereqs', 'profnames']
 
+                for field in fields:
+                    if field not in details:
+                        raise ValueError(f"Missing required field: {field}")
+                
+                if not isinstance(details['classid'], int):
+                    raise TypeError("classid must be an integer")
+                # if not isinstance(details['days'], str):
+                #     raise TypeError("days must be a string")
+                # if not isinstance(details['deptcoursenums'], list):
+                #     raise TypeError("deptcoursenums must be a list") 
+                return details
+                
+        elif not response: 
+            print(f"{sys.argv[0]}: no class with classid " +
+                            str(args.classid) + " exists", file=sys.stderr)
+            sys.exit(1)
+    except Exception as e:
+        print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
+        sys.exit(1)
+#-----------------------------------------------------------------------
+def printResponse(details):
+    try:
         print('-------------')
         print('Class Details')
         print('-------------')
@@ -66,11 +90,10 @@ def validateResponse(args, response):
         print_wrapped(f"Prerequisites: {details['prereqs']}")
         for prof in details['profnames']:
             print_wrapped(f"Professor: {prof}")
-            
-    elif not response: 
-        print(f"{sys.argv[0]}: no class with classid " +
-                          str(args.classid) + " exists", file=sys.stderr)
+    except Exception as e:
+        print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
         sys.exit(1)
+
 #-----------------------------------------------------------------------
 def main():
     parser = argparse.ArgumentParser(description =
@@ -92,8 +115,11 @@ def main():
             sock.connect((host, port)) 
             
             sendRequest(args, sock)
+            
             response = receiveResponse(sock)
-            validateResponse(args, response)
+            
+            details = validateResponse(args, response)
+            printResponse(details)
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
