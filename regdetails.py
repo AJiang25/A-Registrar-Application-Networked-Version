@@ -31,32 +31,27 @@ def send_request(args, sock):
 def receive_response(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     response = reader.readline()
-    details = json.loads(response)
-    return details
+    response_data = json.loads(response)
+    return response_data
     
 #-----------------------------------------------------------------------
 def validate_response(args, response):
     try: 
-        if isinstance(response[0], bool): 
-            if isinstance(response[1], dict):
-                details = response[1]
-                
-                # Check if the fields exist
-                fields = ['classid', 'days', 'starttime', 'endtime', 'bldg', 'roomnum', 
-                            'courseid', 'deptcoursenums', 'area', 'title', 'descrip',
-                            'prereqs', 'profnames']
+        if isinstance(response, list):
+            if isinstance(response[0], bool): 
+                if isinstance(response[1], dict):
+                    details = response[1]
+                    
+                    # Check if the fields exist
+                    fields = ['classid', 'days', 'starttime', 'endtime', 'bldg', 'roomnum', 
+                                'courseid', 'deptcoursenums', 'area', 'title', 'descrip',
+                                'prereqs', 'profnames']
 
-                for field in fields:
-                    if field not in details:
-                        raise ValueError(f"Missing required field: {field}")
-                
-                if not isinstance(details['classid'], int):
-                    raise TypeError("classid must be an integer")
-                # if not isinstance(details['days'], str):
-                #     raise TypeError("days must be a string")
-                # if not isinstance(details['deptcoursenums'], list):
-                #     raise TypeError("deptcoursenums must be a list") 
-                return details
+                    for field in fields:
+                        if field not in details:
+                            raise ValueError(f"Missing required field: {field}")
+                    
+                    return details
                 
         elif not response: 
             print(f"{sys.argv[0]}: no class with classid " +

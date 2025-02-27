@@ -11,16 +11,6 @@ import socket
 import json
 import textwrap
 #-----------------------------------------------------------------------
-def print_wrapped(text):
-    print(textwrap.fill(
-        text,
-        width = 72,
-        break_long_words=False,
-        replace_whitespace=False,
-        subsequent_indent=" "*3
-        )
-    )
-#-----------------------------------------------------------------------
 def send_request(args, sock):
     # Create request object
     request = ['get_overviews', {
@@ -42,25 +32,34 @@ def send_request(args, sock):
 def receive_response(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     response = reader.readline()
-    return response
+    response_data = json.loads(response)
+    return response_data
 
 #-----------------------------------------------------------------------
 def validate_response(args, response):
-    # DO WE NEED ARGS?
-    # work on validation
-    if response and response[0]:
+    try: 
+        if isinstance(response, list):
+            if isinstance(response[0], bool): 
+                if isinstance(response[1], list):
+                    details = response[1]
 
-        # check if response is valid, handle the error
-        # -> write the response
-        response_data = json.loads(response)
-        response_details = response_data[1]
-        return response_details
-        
-    # elif not response:
-    #     print(f"{sys.argv[0]}: no class with classid " +
-    #                       str(args.classid) + " exists",
-    # file=sys.stderr)
-    #     sys.exit(1)
+                    # Check if the fields exist
+                    fields = ['classid', 'dept', 'coursenum', 'area', 'title']
+                    for detail in details:
+                        for field in fields:
+                            if field not in detail:
+                                raise ValueError(f"Missing required field: {field}")
+                    
+                    
+                    return details
+                
+        elif not response: 
+            print(f"{sys.argv[0]}: no class with classid " +
+                            str(args.classid) + " exists", file=sys.stderr)
+            sys.exit(1)
+    except Exception as e:
+        print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
+        sys.exit(1)
 
 #-----------------------------------------------------------------------
 def print_response(response_details):
@@ -78,13 +77,13 @@ def print_response(response_details):
                 row['area'],
                 row['title']
             )
-        print(textwrap.fill(
-            res,
-            width = 72,
-            break_long_words= False,
-            subsequent_indent=" "*23
+            print(textwrap.fill(
+                res,
+                width = 72,
+                break_long_words= False,
+                subsequent_indent=" "*23
+                )
             )
-        )
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
         sys.exit(1)
