@@ -79,7 +79,7 @@ def readRequest(sock):
 
 #-----------------------------------------------------------------------
 def checkRequest(data):    
-    #use isinstance in check request
+    #u se isinstance in check request
     # if this request is not an instance of the list
     # communication protocol in assignmetn specs 
     # break them down into specific error messages  
@@ -180,7 +180,6 @@ def getOverviews(parameters):
         return [False, str(e)]   
 
 #-----------------------------------------------------------------------
-# regdetails.py: string indices must be integers, not 'str'
 def getDetails(classid):
     try:
         with sqlite3.connect(DATABASE_URL, isolation_level = None, uri = True) as connection:
@@ -214,12 +213,10 @@ def getDetails(classid):
                 print("class id: ", classid)
                 cursor.execute(class_query, [classid])
                 
-                # DO WE NEED TO FETCH ALL??????
                 class_row = cursor.fetchone()
                 if not class_row:
                     return [False, "Class not found"]
 
-                # courseid = class_row[0][6]
                 courseid = class_row[6]
 
                 cursor.execute(course_query, [courseid])
@@ -282,25 +279,6 @@ def main():
                 print('Opened socket')
                 client_handler_thread=ClientHandlerThread(sock)
                 client_handler_thread.start()
-           
-                #with sock change to threading lecture (handle client in threading class),
-                #  handleclient function is pretty intensive and long, no sqlite connection, handle JSON documents
-                # JSON functions, interact with database part is kept from the sql database,
-
-                # with sqlite should be in handle_client. overarching sqlite kept from 
-                # last assignment and put in getoverviews function. handle threading in the main function. Call 
-                # something that handles threading. In a client_handler_thread, you will call 
-                # handle_client which is a function that will process JSON documents and getoverviews function. 
-
-                # DON'T NEED THIS START 
-                # with sock:
-                #     print('Accepted connection')
-                #     print('Opened socket')
-                #     print('Server IP addr and port:',
-                #           sock.getsockname())
-                #     print('Client IP addr and port:', client_addr)
-                #     #handle_client(sock)
-                # DON'T NEED THIS END
 
             except Exception as ex:
                 print(ex, file=sys.stderr)    
