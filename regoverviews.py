@@ -53,13 +53,24 @@ def validate_response(args, response):
         # check if response is valid, handle the error
         # -> write the response
         response_data = json.loads(response)
-        ans = response_data[1]
-        print('%5s %4s %6s %4s %s' %
-              ("ClsId", "Dept", "CrsNum", "Area", "Title"))
-        print('%5s %4s %6s %4s %s' %
-              ("-----", "----", "------", "----", "-----"))
+        response_details = response_data[1]
+        return response_details
+        
+    # elif not response:
+    #     print(f"{sys.argv[0]}: no class with classid " +
+    #                       str(args.classid) + " exists",
+    # file=sys.stderr)
+    #     sys.exit(1)
 
-        for row in ans:
+#-----------------------------------------------------------------------
+def print_response(response_details):
+    try: 
+        print('%5s %4s %6s %4s %s' %
+                ("ClsId", "Dept", "CrsNum", "Area", "Title"))
+        print('%5s %4s %6s %4s %s' %
+                ("-----", "----", "------", "----", "-----"))
+
+        for row in response_details:
             res = '%5s %4s %6s %4s %s' % (
                 row['classid'],
                 row['dept'],
@@ -67,19 +78,16 @@ def validate_response(args, response):
                 row['area'],
                 row['title']
             )
-            print(textwrap.fill(
-                res,
-                width = 72,
-                break_long_words= False,
-                subsequent_indent=" "*23
-                )
+        print(textwrap.fill(
+            res,
+            width = 72,
+            break_long_words= False,
+            subsequent_indent=" "*23
             )
-    # elif not response:
-    #     print(f"{sys.argv[0]}: no class with classid " +
-    #                       str(args.classid) + " exists",
-    # file=sys.stderr)
-    #     sys.exit(1)
-
+        )
+    except Exception as e:
+        print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
+        sys.exit(1)
 #-----------------------------------------------------------------------
 
 def main():
@@ -124,7 +132,8 @@ def main():
             sock.connect((host, port))
             send_request(args, sock)
             response = receive_response(sock)
-            validate_response(args, response)
+            response_details = validate_response(args, response)
+            print_response(response_details)
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)

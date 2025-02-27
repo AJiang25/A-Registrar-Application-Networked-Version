@@ -15,7 +15,7 @@ def print_wrapped(text):
     print(textwrap.fill(text, width = 72, break_long_words=False,
                         replace_whitespace=False, subsequent_indent=" "*3))
 #-----------------------------------------------------------------------
-def sendRequest(args, sock):
+def send_request(args, sock):
     # Create request object
     request = ['get_details', args.classid]
 
@@ -28,14 +28,14 @@ def sendRequest(args, sock):
     writer.flush()
     
 #-----------------------------------------------------------------------
-def receiveResponse(sock):
+def receive_response(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     response = reader.readline()
     details = json.loads(response)
     return details
     
 #-----------------------------------------------------------------------
-def validateResponse(args, response):
+def validate_response(args, response):
     try: 
         if isinstance(response[0], bool): 
             if isinstance(response[1], dict):
@@ -66,7 +66,7 @@ def validateResponse(args, response):
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
         sys.exit(1)
 #-----------------------------------------------------------------------
-def printResponse(details):
+def print_response(details):
     try:
         print('-------------')
         print('Class Details')
@@ -114,12 +114,12 @@ def main():
         with socket.socket() as sock:
             sock.connect((host, port)) 
             
-            sendRequest(args, sock)
+            send_request(args, sock)
             
-            response = receiveResponse(sock)
+            response = receive_response(sock)
             
-            details = validateResponse(args, response)
-            printResponse(details)
+            details = validate_response(args, response)
+            print_response(details)
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
