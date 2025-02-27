@@ -180,8 +180,6 @@ def getOverviews(parameters):
         return [False, str(e)]   
 
 #-----------------------------------------------------------------------
-# ['get_details', 8321]
-# [false, "list index out of range"]
 # regdetails.py: string indices must be integers, not 'str'
 def getDetails(classid):
     try:
