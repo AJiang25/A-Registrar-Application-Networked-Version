@@ -64,6 +64,7 @@ def main():
     exec_command(program, prefix + '-d COS')
     exec_command(program, prefix + '-d COS -a qr -n 2 -t intro')
 
+    #testing
     #Coverage Case Testing
     exec_command(program, '')
     exec_command(program, '-d COS')
