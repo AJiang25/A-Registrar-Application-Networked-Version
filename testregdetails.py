@@ -61,6 +61,14 @@ def main():
     exec_command(program, '9034')
     exec_command(program, '1000000000')
 
+    # Additional Error Case Testing 
+    exec_command(program, '["invalid_request_type", {}]')  
+    exec_command(program, '[123, {}]')  
+    exec_command(program, '["get_overviews", "not_a_dict"]') 
+    exec_command(program, '["get_overviews", {"dept": 123, "coursenum": "COS"}]')  
+    exec_command(program, '["get_details", "not_an_int"]')  
+    exec_command(program, '["get_details", -5]')  
+
     # Database Testing
     try: 
         shutil.copy('reg.sqlite', 'regbackup.sqlite')

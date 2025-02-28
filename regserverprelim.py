@@ -93,29 +93,29 @@ def checkRequest(data):
     parameters = data[1]
 
     if not isinstance(request_type, str):
-        raise ValueError("Invalid format: First element must be a string.")
+        return (False, "Invalid format: First element must be a string.")
 
     if request_type == "get_overviews":
         if not isinstance(parameters, dict):
-            raise ValueError("Invalid format: Expected a dictionary for get_overview parameters.")
+            return (False, "Invalid format: Expected a dictionary for get_overview parameters.")
         
         required_keys = {"dept", "coursenum", "area", "title"}
         if set(parameters.keys()) != required_keys:
-            raise ValueError("Invalid format: Parameters must contain only 'dept', 'coursenum', 'area', and 'title'.")
+            return (False, "Invalid format: Parameters must contain only 'dept', 'coursenum', 'area', and 'title'.")
 
         for key, value in parameters.items():
             if not isinstance(value, str):
-                raise ValueError(f"Invalid format: '{key}' must be a string.")
+                return (False, "Invalid format: '{key}' must be a string.")
 
     elif request_type == "get_details":
         if not isinstance(parameters, int):
-            raise ValueError("Invalid format: Expected an integer for classid in get_details request.")
+            return (False, "Invalid format: Expected an integer for classid in get_details request.")
 
         if parameters <= 0:
-            raise ValueError("Invalid format: classid must be a positive integer.")
-
+            return (False, "Invalid format: classid must be a positive integer.")
+            
     else:
-        raise ValueError("Invalid type: Request type must be 'get_overviews' or 'get_details'.")
+        return (False, "Invalid type: Request type must be 'get_overviews' or 'get_details'.")
 
 #-----------------------------------------------------------------------
 def writeResponse(response, sock):
