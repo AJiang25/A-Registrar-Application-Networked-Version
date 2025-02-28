@@ -72,6 +72,26 @@ usage: regdetails.py [-h] host port classid
 regdetails.py: error: the following arguments are required: port, classid
 Exit status = 2
 ------------------------------------------------------------------------
+python regdetails.py 10261
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 10262
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 10263
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 10264
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
 python regdetails.py 9158
 usage: regdetails.py [-h] host port classid
 regdetails.py: error: the following arguments are required: port, classid
@@ -112,36 +132,6 @@ regdetails.py: error: the following arguments are required: port, classid
 Exit status = 2
 ------------------------------------------------------------------------
 python regdetails.py 1000000000
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: the following arguments are required: port, classid
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py ["invalid_request_type", {}]
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: argument port: invalid int value: '{}]'
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py [123, {}]
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: argument port: invalid int value: '{}]'
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py ["get_overviews", "not_a_dict"]
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: argument port: invalid int value: 'not_a_dict]'
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py ["get_overviews", {"dept": 123, "coursenum": "COS"}]
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: argument port: invalid int value: '{dept:'
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py ["get_details", "not_an_int"]
-usage: regdetails.py [-h] host port classid
-regdetails.py: error: argument port: invalid int value: 'not_an_int]'
-Exit status = 2
-------------------------------------------------------------------------
-python regdetails.py ["get_details", -5]
 usage: regdetails.py [-h] host port classid
 regdetails.py: error: the following arguments are required: port, classid
 Exit status = 2

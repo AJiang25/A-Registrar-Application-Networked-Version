@@ -148,20 +148,12 @@ def main():
             send_request(args, sock)
             response = receive_response(sock)
             valid, response_details = validate_response(response)
-            
-            
             if not valid:
-                raise ValueError(response_details)
-                # print(
-                #     textwrap.fill(
-                #     response_details,
-                #     width = 72,
-                #     break_long_words= False,
-                #     subsequent_indent=" "*23
-                # ))
+                # raise ValueError(response_details)
+                print_response(response_details)
+                sys.exit(1)
             elif valid:
                 print_response(response_details)
-            
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)

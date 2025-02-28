@@ -155,12 +155,12 @@ def main():
             sock.connect((host, port))
             send_request(args, sock)
             response = receive_response(sock)
-            valid, details = validate_response(args, response)
+            valid, response_details = validate_response(args, response)
             if not valid:
-                print_response(details)
+                print_response(response_details)
                 sys.exit(1)
             elif valid:
-                print_response(details)
+                print_response(response_details)
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)

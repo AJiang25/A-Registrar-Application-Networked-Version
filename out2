@@ -84,6 +84,21 @@ usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
 regoverviews.py: error: the following arguments are required: host, port
 Exit status = 2
 ------------------------------------------------------------------------
+python regoverviews.py -n 240
+usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
+regoverviews.py: error: the following arguments are required: host, port
+Exit status = 2
+------------------------------------------------------------------------
+python regoverviews.py -n 226
+usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
+regoverviews.py: error: the following arguments are required: host, port
+Exit status = 2
+------------------------------------------------------------------------
+python regoverviews.py -n 217
+usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
+regoverviews.py: error: the following arguments are required: host, port
+Exit status = 2
+------------------------------------------------------------------------
 python regoverviews.py -n 445
 usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
 regoverviews.py: error: the following arguments are required: host, port
@@ -209,33 +224,12 @@ usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
 regoverviews.py: error: the following arguments are required: host, port
 Exit status = 2
 ------------------------------------------------------------------------
-python regoverviews.py ["invalid_request_type", {}]
+python regoverviews.py -d ENG
 usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
-regoverviews.py: error: argument port: invalid int value: '{}]'
-Exit status = 2
-------------------------------------------------------------------------
-python regoverviews.py [123, {}]
-usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
-regoverviews.py: error: argument port: invalid int value: '{}]'
-Exit status = 2
-------------------------------------------------------------------------
-python regoverviews.py ["get_overviews", "not_a_dict"]
-usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
-regoverviews.py: error: argument port: invalid int value: 'not_a_dict]'
-Exit status = 2
-------------------------------------------------------------------------
-python regoverviews.py ["get_overviews", {"dept": 123, "coursenum": "COS"}]
-usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
-regoverviews.py: error: argument port: invalid int value: '{dept:'
-Exit status = 2
-------------------------------------------------------------------------
-python regoverviews.py ["get_overviews", {"dept": "COS"}]
-usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
-regoverviews.py: error: argument port: invalid int value: '{dept:'
+regoverviews.py: error: the following arguments are required: host, port
 Exit status = 2
 ------------------------------------------------------------------------
 python regoverviews.py -d ENG
 usage: regoverviews.py [-h] [-d dept] [-n num] [-a area] [-t title] host port
 regoverviews.py: error: the following arguments are required: host, port
 Exit status = 2
-Database file not found, skipping database error tests.
