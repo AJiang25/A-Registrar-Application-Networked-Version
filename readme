@@ -1,0 +1,72 @@
+Readme File: 
+----------------------------------------------------------------------------
+Amanda Chan (ac2921)
+Arnold Jiang (aj9183)
+----------------------------------------------------------------------------
+Partner 1:
+----------------------------------------------------------------------------
+Amanda: For regserver.py, I wrote the Client Handler Thread, the handle 
+client function, the check request function, and the main function logic. I 
+also figured out the modularity in regserver.py. I also moved the logic 
+from Assignment 1 to our get overview function and get details function. 
+I also added more tests to testregdetails.py and testregoverviews.py. For 
+regoverviews.py and regdetails.py, I wrote the socket logic for main and
+the logic in the receive response function.  
+
+----------------------------------------------------------------------------
+Partner 2:
+----------------------------------------------------------------------------
+Arnold: For regserver.py, I wrote the read request function and write 
+response function. I also figured out the JSON formatting in the get 
+overview function and get detail function. I also wrote the consume cpu 
+time function. For regoverviews.py and regdetails.py, I wrote the valid
+request function and the send request function. I also modularized the code
+in both files so they were organized into functions. I also fixed all of 
+the formatting errors using pylint. 
+
+----------------------------------------------------------------------------
+Help Received:
+----------------------------------------------------------------------------
+Help we received from other people: 
+2/19 Ambri (TA)
+2/21 Ambri (TA)
+2/24 Xinran (TA)
+2/22 Jocelyn (TA)
+2/27 Ambri (TA)
+
+----------------------------------------------------------------------------
+Time Spent:
+----------------------------------------------------------------------------
+Time spent doing the assignment: 12 hours
+
+----------------------------------------------------------------------------
+Citations:
+----------------------------------------------------------------------------
+Sources of Information: EdStem, Lecture handouts, course page
+
+----------------------------------------------------------------------------
+Learnings:
+----------------------------------------------------------------------------
+The assignment helped us gain a better understanding of how servers 
+and threading worked, including receiving responses, validating responses, 
+and sending responses, all of which were new concepts to us. We also gained 
+a better understanding of how to format data into JSON. We also learned
+how to improve our modularity and organization by separating code into 
+functions. 
+----------------------------------------------------------------------------
+With respect to I/O and compute delays, in a high-volume environment under 
+what circumstances is regserver.py better than regserverprelim.py?
+
+Regserver.py is better than regserverprelim.py in circumstances where
+concurrency improves performance and efficiency. These circumstances 
+include CPU-bound tasks that can be parallelized, I/O-bound applications 
+that involve concurrency over sequential processing, and server a
+applications. 
+
+----------------------------------------------------------------------------
+With respect to I/O and compute delays, in a high-volume environment under 
+what circumstances is regserver.py not better than regserverprelim.py?
+
+Regserverprelim.py is not better than regserverprelim.py in circumstances
+where the task is sequential like reading a file line by line or when the
+overhead of thread management outweighs performance benefits. 
