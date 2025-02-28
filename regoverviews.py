@@ -149,8 +149,10 @@ def main():
             response = receive_response(sock)
             valid, response_details = validate_response(response)
             if not valid:
-                # raise ValueError(response_details)
-                print_response(response_details)
+                print(
+                    f"{sys.argv[0]}: {str(response_details)}",
+                    file=sys.stderr
+                )
                 sys.exit(1)
             elif valid:
                 print_response(response_details)
