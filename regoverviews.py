@@ -39,22 +39,24 @@ def receive_response(sock):
 #-----------------------------------------------------------------------
 def validate_response(response):
     try:
+        if not response[0]:
+            return response
+        details = response
         if not isinstance(response, list):
-            return (
+            details = (
                 False,
                 "Invalid format: the response is not a list."
             )
         if not isinstance(response[0], bool):
-            return (
+            details = (
                 False,
     "Invalid format: the first element of response is not a boolean."
             )
         if not isinstance(response[1], list):
-            return (
+            details = (
                 False,
     "Invalid format: the first element of response is not a list"
             )
-        details = response[1]
 
         # Check if the fields exist
         fields = [
@@ -64,7 +66,7 @@ def validate_response(response):
             'area',
             'title'
         ]
-        for detail in details:
+        for detail in response[1]:
             for field in fields:
                 if field not in detail:
                     return (False,
@@ -145,8 +147,21 @@ def main():
             sock.connect((host, port))
             send_request(args, sock)
             response = receive_response(sock)
-            response_details = validate_response(response)
-            print_response(response_details)
+            valid, response_details = validate_response(response)
+            
+            
+            if not valid:
+                raise ValueError(response_details)
+                # print(
+                #     textwrap.fill(
+                #     response_details,
+                #     width = 72,
+                #     break_long_words= False,
+                #     subsequent_indent=" "*23
+                # ))
+            elif valid:
+                print_response(response_details)
+            
 
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)

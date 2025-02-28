@@ -8,11 +8,30 @@
 import os
 import sys
 import shutil
+import argparse
 
 #-----------------------------------------------------------------------
 
 MAX_LINE_LENGTH = 72
 UNDERLINE = '-' * MAX_LINE_LENGTH
+
+#-----------------------------------------------------------------------
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(
+        description=
+        "Test the Registrar's application's handling of " +
+        "class details requests")
+    parser.add_argument('program', metavar='program', type=str,
+        help='the client program to run')
+    parser.add_argument('host', metavar='host', type=str,
+        help='the host on which the server is running')
+    parser.add_argument('port', metavar='port', type=int,
+        help='the port at which the server is listening')
+    args = parser.parse_args()
+
+    return (args.program, args.host, args.port)
 
 #-----------------------------------------------------------------------
 
@@ -37,12 +56,13 @@ def exec_command(program, args):
 
 def main():
 
-    if len(sys.argv) != 2:
-        print('Usage: ' + sys.argv[0] + ' regdetailsprogram',
-            file=sys.stderr)
-        sys.exit(1)
+    program, host, port = parse_args()
 
-    program = sys.argv[1]
+    exec_command(program, '-h')
+
+    prefix = host + ' ' + str(port) + ' '
+
+    exec_command(program, prefix + '8321')
 
     # Coverage Case Testing
     exec_command(program, '8321')
