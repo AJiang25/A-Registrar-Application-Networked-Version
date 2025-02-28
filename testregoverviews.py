@@ -33,7 +33,6 @@ def exec_command(program, args):
     else:
         print_flush('Exit status = ' + str(os.WEXITSTATUS(exit_status)))
 
-#-----------------------------------------------------------------------
 
 def main():
 

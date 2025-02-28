@@ -37,25 +37,35 @@ def receive_response(sock):
 
 #-----------------------------------------------------------------------
 def validate_response(args, response):
-    try: 
+    try:
         if isinstance(response, list):
-            if isinstance(response[0], bool): 
+            if isinstance(response[0], bool):
                 if isinstance(response[1], list):
                     details = response[1]
 
                     # Check if the fields exist
-                    fields = ['classid', 'dept', 'coursenum', 'area', 'title']
+                    fields = [
+                        'classid',
+                        'dept',
+                        'coursenum',
+                        'area',
+                        'title'
+                    ]
                     for detail in details:
                         for field in fields:
                             if field not in detail:
-                                raise ValueError(f"Missing required field: {field}")
-                    
-                    
+                                raise ValueError(
+                                    f"Missing required field: {field}"
+                                )
+
                     return details
-                
-        elif not response: 
-            print(f"{sys.argv[0]}: no class with classid " +
-                            str(args.classid) + " exists", file=sys.stderr)
+
+        elif not response:
+            print(
+                f"{sys.argv[0]}: no class with classid " +
+                            str(args.classid) + " exists",
+                            file=sys.stderr
+                )
             sys.exit(1)
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
@@ -63,7 +73,7 @@ def validate_response(args, response):
 
 #-----------------------------------------------------------------------
 def print_response(response_details):
-    try: 
+    try:
         print('%5s %4s %6s %4s %s' %
                 ("ClsId", "Dept", "CrsNum", "Area", "Title"))
         print('%5s %4s %6s %4s %s' %
