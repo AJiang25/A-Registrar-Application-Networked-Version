@@ -63,7 +63,7 @@ def main():
     exec_command(program, '-t "  Independent Study"')
     exec_command(program, '-t=-c')
 
-    #Error Case Testing 
+    #Error Case Testing
     exec_command(program, 'a qr')
     exec_command(program, '-A qr')
     exec_command(program, '-A \br')
@@ -75,22 +75,28 @@ def main():
     exec_command(program, '-x')
 
     #Additional Error Case Testing
-    exec_command(program, '["invalid_request_type", {}]')  
-    exec_command(program, '[123, {}]')  
-    exec_command(program, '["get_overviews", "not_a_dict"]') 
-    exec_command(program, '["get_overviews", {"dept": 123, "coursenum": "COS"}]') 
-    exec_command(program, '["get_overviews", {"dept": "COS"}]')  
-    
+    exec_command(program, '["invalid_request_type", {}]')
+    exec_command(program, '[123, {}]')
+    exec_command(program, '["get_overviews", "not_a_dict"]')
+    exec_command(
+        program,
+        '["get_overviews", {"dept": 123, "coursenum": "COS"}]'
+    )
+    exec_command(program, '["get_overviews", {"dept": "COS"}]')
+
     # Database Testing
-    try: 
+    try:
         shutil.copy('reg.sqlite', 'regbackup.sqlite')
         os.remove('reg.sqlite')
-        exec_command(program, '-d ENG') 
+        exec_command(program, '-d ENG')
         shutil.copy('regflawed.sqlite', 'reg.sqlite')
-        exec_command(program, '-d ENG') 
+        exec_command(program, '-d ENG')
         shutil.copy('regbackup.sqlite', 'reg.sqlite')
     except FileNotFoundError:
-        print('Database file not found, skipping database error tests.', file=sys.stderr)
+        print(
+            'Database file not found, skipping database error tests.',
+            file=sys.stderr
+        )
 
 #-----------------------------------------------------------------------
 

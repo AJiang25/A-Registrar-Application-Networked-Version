@@ -32,41 +32,45 @@ def send_request(args, sock):
 def receive_response(sock):
     reader = sock.makefile(mode='r', encoding='ascii')
     response = reader.readline()
+
     response_data = json.loads(response)
     return response_data
 
 #-----------------------------------------------------------------------
-def validate_response(args, response):
+def validate_response(response):
     try:
-        if isinstance(response, list):
-            if isinstance(response[0], bool):
-                if isinstance(response[1], list):
-                    details = response[1]
+        if not isinstance(response, list):
+            return (
+                False,
+                "Invalid format: the response is not a list."
+            )
+        if not isinstance(response[0], bool):
+            return (
+                False,
+    "Invalid format: the first element of response is not a boolean."
+            )
+        if not isinstance(response[1], list):
+            return (
+                False,
+    "Invalid format: the first element of response is not a list"
+            )
+        details = response[1]
 
-                    # Check if the fields exist
-                    fields = [
-                        'classid',
-                        'dept',
-                        'coursenum',
-                        'area',
-                        'title'
-                    ]
-                    for detail in details:
-                        for field in fields:
-                            if field not in detail:
-                                raise ValueError(
-                                    f"Missing required field: {field}"
-                                )
-
-                    return details
-
-        elif not response:
-            print(
-                f"{sys.argv[0]}: no class with classid " +
-                            str(args.classid) + " exists",
-                            file=sys.stderr
-                )
-            sys.exit(1)
+        # Check if the fields exist
+        fields = [
+            'classid',
+            'dept',
+            'coursenum',
+            'area',
+            'title'
+        ]
+        for detail in details:
+            for field in fields:
+                if field not in detail:
+                    return (False,
+                        f"Missing required field: {field}"
+                    )
+        return details
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
         sys.exit(1)
@@ -141,7 +145,7 @@ def main():
             sock.connect((host, port))
             send_request(args, sock)
             response = receive_response(sock)
-            response_details = validate_response(args, response)
+            response_details = validate_response(response)
             print_response(response_details)
 
     except Exception as e:

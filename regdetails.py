@@ -42,41 +42,52 @@ def receive_response(sock):
 #-----------------------------------------------------------------------
 def validate_response(args, response):
     try:
-        if isinstance(response, list):
-            if isinstance(response[0], bool):
-                if isinstance(response[1], dict):
-                    details = response[1]
-
-                    # Check if the fields exist
-                    fields = [
-                        'classid',
-                        'days',
-                        'starttime',
-                        'endtime',
-                        'bldg',
-                        'roomnum',
-                        'courseid',
-                        'deptcoursenums',
-                        'area',
-                        'title',
-                        'descrip',
-                        'prereqs',
-                        'profnames'
-                    ]
-
-                    for field in fields:
-                        if field not in details:
-                            raise ValueError(
-                                f"Missing required field: {field}"
-                            )
-
-                    return details
-
-        elif not response:
+        if not response:
             print(f"{sys.argv[0]}: no class with classid " +
                             str(args.classid) + " exists",
                             file=sys.stderr)
             sys.exit(1)
+        if not isinstance(response, list):
+            return (
+                False,
+                "Invalid format: the response is not a list."
+            )
+        if not isinstance(response[0], bool):
+            return (
+                False,
+    "Invalid format: the first element of response is not a boolean."
+            )
+        if not isinstance(response[1], dict):
+            return (
+                False,
+    "Invalid format: the first element of response is not a dictionary."
+            )
+        details = response[1]
+
+        # Check if the fields exist
+        fields = [
+            'classid',
+            'days',
+            'starttime',
+            'endtime',
+            'bldg',
+            'roomnum',
+            'courseid',
+            'deptcoursenums',
+            'area',
+            'title',
+            'descrip',
+            'prereqs',
+            'profnames'
+        ]
+
+        for field in fields:
+            if field not in details:
+                raise ValueError(
+                    f"Missing required field: {field}"
+                )
+
+        return details
     except Exception as e:
         print(f"{sys.argv[0]}: {str(e)}", file=sys.stderr)
         sys.exit(1)
