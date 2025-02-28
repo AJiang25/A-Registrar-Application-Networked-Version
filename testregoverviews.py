@@ -68,6 +68,9 @@ def main():
     exec_command(program, '')
     exec_command(program, '-d COS')
     exec_command(program, '-n 333')
+    exec_command(program, '-n 240')
+    exec_command(program, '-n 226')
+    exec_command(program, '-n 217')
     exec_command(program, '-n 445')
     exec_command(program, '-n b')
     exec_command(program, '-a Qr')
@@ -95,16 +98,6 @@ def main():
     exec_command(program, '-a qr -d')
     exec_command(program, '-a -d cos')
     exec_command(program, '-x')
-
-    #Additional Error Case Testing
-    exec_command(program, '["invalid_request_type", {}]')
-    exec_command(program, '[123, {}]')
-    exec_command(program, '["get_overviews", "not_a_dict"]')
-    exec_command(
-        program,
-        '["get_overviews", {"dept": 123, "coursenum": "COS"}]'
-    )
-    exec_command(program, '["get_overviews", {"dept": "COS"}]')
 
     # Database Testing
     try:

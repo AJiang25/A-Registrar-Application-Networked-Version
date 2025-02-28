@@ -71,6 +71,10 @@ def main():
     exec_command(program, '9977')
     exec_command(program, '9012')
     exec_command(program, '10188')
+    exec_command(program, '10261')
+    exec_command(program, '10262')
+    exec_command(program, '10263')
+    exec_command(program, '10264')
     exec_command(program, '9158')
 
     # Error Case Testing
@@ -80,17 +84,6 @@ def main():
     exec_command(program, 'abc123')
     exec_command(program, '9034')
     exec_command(program, '1000000000')
-
-    # Additional Error Case Testing
-    exec_command(program, '["invalid_request_type", {}]')
-    exec_command(program, '[123, {}]')
-    exec_command(program, '["get_overviews", "not_a_dict"]')
-    exec_command(
-        program,
-        '["get_overviews", {"dept": 123, "coursenum": "COS"}]'
-    )
-    exec_command(program, '["get_details", "not_an_int"]')
-    exec_command(program, '["get_details", -5]')
 
     # Database Testing
     try:

@@ -157,14 +157,8 @@ def main():
             response = receive_response(sock)
             valid, details = validate_response(args, response)
             if not valid:
-                raise ValueError(details)
-                # print(
-                #     textwrap.fill(
-                #     response_details,
-                #     width = 72,
-                #     break_long_words= False,
-                #     subsequent_indent=" "*23
-                # ))
+                print_response(details)
+                sys.exit(1)
             elif valid:
                 print_response(details)
 
