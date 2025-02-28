@@ -51,7 +51,7 @@ def handleClient(sock):
         request = readRequest(sock)
         valid, errorMessage = checkRequest(request)
         if(not valid):
-            writeResponse(errorMessage, sock)
+           writeResponse(errorMessage, sock)
 
         time.sleep(IODELAY)
         consume_cpu_time(CDELAY)
@@ -81,13 +81,8 @@ def readRequest(sock):
 
 #-----------------------------------------------------------------------
 def checkRequest(data):    
-    #u se isinstance in check request
-    # if this request is not an instance of the list
-    # communication protocol in assignmetn specs 
-    # break them down into specific error messages  
     if not isinstance(data, list) or len(data) != 2:
         return (False, "Invalid format: Request must be a list with two elements.")
-        #raise ValueError("Invalid format: Request must be a list with two elements.")
 
     request_type = data[0]
     parameters = data[1]

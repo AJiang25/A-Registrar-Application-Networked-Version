@@ -1,0 +1,157 @@
+------------------------------------------------------------------------
+python regdetails.py -h
+usage: regdetails.py [-h] host port classid
+
+Registrar application: show details about a class
+
+positional arguments:
+  host        the computer on which the server is running
+  port        the port at which the server is listening
+  classid     the id of the class whose details should be shown
+
+options:
+  -h, --help  show this help message and exit
+Exit status = 0
+------------------------------------------------------------------------
+python regdetails.py localhost 8080 8321
+-------------
+Class Details
+-------------
+Class Id: 8321
+Days: TTh
+Start time: 11:00 AM
+End time: 12:20 PM
+Building: FRIEN
+Room: 006
+--------------
+Course Details
+--------------
+Course Id: 3672
+Dept and Number: COS 333
+Area:
+Title: Advanced C%Science Programming Techniques
+Description: This is a course about the practice of programming.
+   Programming is more than just writing code.  Programmers must also
+   assess tradeoffs, choose among design alternatives, debug and test,
+   improve performance, and maintain software written by themselves &
+   others. At the same time, they must be concerned with compatibility,
+   robustness, and reliability, while meeting specifications.  Students
+   will have the opportunity to develop these skills by working on their
+   own code and in group projects.
+Prerequisites: COS 217 and COS 226.
+Professor: Brian W. Kernighan
+Exit status = 0
+------------------------------------------------------------------------
+python regdetails.py 8321
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 9032
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 8293
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 9977
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 9012
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 10188
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 9158
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py -h
+usage: regdetails.py [-h] host port classid
+
+Registrar application: show details about a class
+
+positional arguments:
+  host        the computer on which the server is running
+  port        the port at which the server is listening
+  classid     the id of the class whose details should be shown
+
+options:
+  -h, --help  show this help message and exit
+Exit status = 0
+------------------------------------------------------------------------
+python regdetails.py 
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: host, port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 8321 9032
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py abc123
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 9034
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py 1000000000
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py ["invalid_request_type", {}]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: argument port: invalid int value: '{}]'
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py [123, {}]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: argument port: invalid int value: '{}]'
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py ["get_overviews", "not_a_dict"]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: argument port: invalid int value: 'not_a_dict]'
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py ["get_overviews", {"dept": 123, "coursenum": "COS"}]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: argument port: invalid int value: '{dept:'
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py ["get_details", "not_an_int"]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: argument port: invalid int value: 'not_an_int]'
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py ["get_details", -5]
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py -d ENG
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2
+------------------------------------------------------------------------
+python regdetails.py -d ENG
+usage: regdetails.py [-h] host port classid
+regdetails.py: error: the following arguments are required: port, classid
+Exit status = 2

@@ -8,11 +8,30 @@
 import os
 import sys
 import shutil
+import argparse
 
 #-----------------------------------------------------------------------
 
 MAX_LINE_LENGTH = 72
 UNDERLINE = '-' * MAX_LINE_LENGTH
+
+#-----------------------------------------------------------------------
+
+def parse_args():
+
+    parser = argparse.ArgumentParser(
+        description=
+        "Test the Registrar's application's handling of " +
+        "class details requests")
+    parser.add_argument('program', metavar='program', type=str,
+        help='the client program to run')
+    parser.add_argument('host', metavar='host', type=str,
+        help='the host on which the server is running')
+    parser.add_argument('port', metavar='port', type=int,
+        help='the port at which the server is listening')
+    args = parser.parse_args()
+
+    return (args.program, args.host, args.port)
 
 #-----------------------------------------------------------------------
 
@@ -37,12 +56,13 @@ def exec_command(program, args):
 
 def main():
 
-    if len(sys.argv) != 2:
-        print('Usage: ' + sys.argv[0] + ' regdetailsprogram',
-            file=sys.stderr)
-        sys.exit(1)
+    program, host, port = parse_args()
 
-    program = sys.argv[1]
+    exec_command(program, '-h')
+
+    prefix = host + ' ' + str(port) + ' '
+
+    exec_command(program, prefix + '8321')
 
     # Coverage Case Testing
     exec_command(program, '8321')
@@ -61,25 +81,30 @@ def main():
     exec_command(program, '9034')
     exec_command(program, '1000000000')
 
-    # Additional Error Case Testing 
-    exec_command(program, '["invalid_request_type", {}]')  
-    exec_command(program, '[123, {}]')  
-    exec_command(program, '["get_overviews", "not_a_dict"]') 
-    exec_command(program, '["get_overviews", {"dept": 123, "coursenum": "COS"}]')  
-    exec_command(program, '["get_details", "not_an_int"]')  
-    exec_command(program, '["get_details", -5]')  
+    # Additional Error Case Testing
+    exec_command(program, '["invalid_request_type", {}]')
+    exec_command(program, '[123, {}]')
+    exec_command(program, '["get_overviews", "not_a_dict"]')
+    exec_command(
+        program,
+        '["get_overviews", {"dept": 123, "coursenum": "COS"}]'
+    )
+    exec_command(program, '["get_details", "not_an_int"]')
+    exec_command(program, '["get_details", -5]')
 
     # Database Testing
-    try: 
+    try:
         shutil.copy('reg.sqlite', 'regbackup.sqlite')
         os.remove('reg.sqlite')
-        exec_command(program, '-d ENG') 
+        exec_command(program, '-d ENG')
         shutil.copy('regflawed.sqlite', 'reg.sqlite')
-        exec_command(program, '-d ENG') 
+        exec_command(program, '-d ENG')
         shutil.copy('regbackup.sqlite', 'reg.sqlite')
     except FileNotFoundError:
-        print('Database file not found, skipping database error tests.', file=sys.stderr)
-
+        print(
+            'Database file not found, skipping database error tests.',
+            file=sys.stderr
+        )
 
 if __name__ == '__main__':
     main()
